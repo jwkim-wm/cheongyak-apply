@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>청약 알림 신청</title>
+<meta name="description" content="관심 지역과 단지 규모를 고르면 새 아파트 청약 공고와 경쟁률을 텔레그램으로 받아보는 알림 신청 페이지">
+<meta property="og:title" content="청약 알림 신청">
+<meta property="og:description" content="지역과 규모만 고르면 청약 공고와 경쟁률을 텔레그램으로 받아보세요">
+<meta property="og:type" content="website">
+<style>
+  :root{color-scheme:light dark;}
+  html,body{margin:0;padding:0;}
+  img{max-width:100%;}
+</style>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#eef1f5;
+    --ink:#18212c; --muted:#5d6874;
+    --accent:#2a5fa5; --accent-ink:#ffffff; --accent-soft:#e8eff8;
+    --tg:#229ED9; --line:#dfe3e9;
+    --shadow:0 1px 2px rgba(20,30,45,.04), 0 10px 28px -16px rgba(20,30,45,.18);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1319; --surface:#161c24; --surface-2:#1d242e; --ink:#e6ecf3; --muted:#94a1b0;
+      --accent:#79b0e6; --accent-ink:#0c1520; --accent-soft:#1a2735; --tg:#3fb0e8; --line:#2a323d;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1319; --surface:#161c24; --surface-2:#1d242e; --ink:#e6ecf3; --muted:#94a1b0;
+    --accent:#79b0e6; --accent-ink:#0c1520; --accent-soft:#1a2735; --tg:#3fb0e8; --line:#2a323d;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 28px -16px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--ink); padding-inline:16px;
+    font-family:'IBM Plex Sans KR',-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px; margin:0 auto; padding-block:44px 60px; display:flex; flex-direction:column; gap:26px;}
+  h1{font-family:'Gowun Batang',serif; font-size:1.65rem; margin:0; text-wrap:balance;}
+  h2{font-size:.95rem; margin:0 0 12px; display:flex; align-items:center; gap:9px;}
+  h2 .n{width:22px; height:22px; border-radius:7px; background:var(--accent); color:var(--accent-ink);
+        display:flex; align-items:center; justify-content:center; font-size:.76rem; font-weight:700; flex-shrink:0;}
+  p{margin:0;}
+  .lede{color:var(--muted); font-size:.96rem;}
+  header{display:flex; flex-direction:column; gap:8px; padding-bottom:4px;}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:var(--shadow);}
+  .chips{display:flex; flex-wrap:wrap; gap:7px;}
+  .chip{
+    font:inherit; font-size:.88rem; font-weight:500; cursor:pointer; user-select:none;
+    padding:8px 14px; border-radius:999px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--ink); transition:background .12s, border-color .12s;
+  }
+  .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+  .chip:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .chip.wide{flex:1; min-width:96px; text-align:center;}
+
+  .summary{
+    background:var(--accent-soft); border-radius:12px; padding:16px 18px;
+    font-size:1rem; line-height:1.55; color:var(--ink);
+  }
+  .summary b{color:var(--accent);}
+
+  .go{
+    display:flex; align-items:center; justify-content:center; gap:9px;
+    width:100%; padding:16px; border:0; border-radius:12px; cursor:pointer;
+    background:var(--tg); color:#fff; font:inherit; font-size:1.02rem; font-weight:700;
+    text-decoration:none; box-shadow:var(--shadow);
+  }
+  .go[aria-disabled="true"]{opacity:.45; pointer-events:none;}
+  .go:focus-visible{outline:2px solid var(--accent); outline-offset:3px;}
+  .after{font-size:.86rem; color:var(--muted); margin-top:10px; text-align:center;}
+
+  .steps{list-style:none; counter-reset:s; margin:0; padding:0; display:grid; gap:8px;}
+  .steps li{counter-increment:s; display:grid; grid-template-columns:20px 1fr; gap:10px; font-size:.9rem; color:var(--muted);}
+  .steps li::before{content:counter(s); font-size:.72rem; font-weight:600; color:var(--accent);
+    background:var(--accent-soft); border-radius:6px; height:20px; display:flex; align-items:center; justify-content:center;}
+  .steps b{color:var(--ink); font-weight:600;}
+
+  details{border-top:1px solid var(--line); padding-top:16px;}
+  summary{cursor:pointer; font-size:.86rem; color:var(--muted); font-weight:500;}
+  .admin{margin-top:14px; display:flex; flex-direction:column; gap:10px;}
+  .admin label{font-size:.84rem; color:var(--muted);}
+  input[type=text]{
+    font:inherit; font-size:.92rem; padding:11px 13px; width:100%;
+    border:1px solid var(--line); border-radius:10px; background:var(--surface-2); color:var(--ink);
+  }
+  input[type=text]:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
+  .share{font-size:.82rem; color:var(--muted); word-break:break-all; background:var(--surface-2);
+         border-radius:9px; padding:11px 13px; display:none;}
+  .share b{color:var(--ink);}
+  .mini{font-size:.82rem; font-weight:600; padding:9px 14px; border-radius:9px; border:0; cursor:pointer;
+        background:var(--accent); color:var(--accent-ink); font-family:inherit; align-self:flex-start;}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <h1>청약 알림 신청</h1>
+    <p class="lede">관심 지역과 규모만 고르면, 새 공고가 뜰 때 텔레그램으로 알려드립니다. 청약이 마감되면 다음날 아침 경쟁률 엑셀도 함께 보내드려요.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="n">1</span>어느 지역을 보시나요?</h2>
+    <div class="chips" id="regions"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">2</span>단지 규모는요?</h2>
+    <div class="chips" id="sizes"></div>
+  </section>
+
+  <section>
+    <p class="summary" id="summary">지역을 하나 이상 골라주세요.</p>
+    <a class="go" id="go" href="#" aria-disabled="true" rel="noopener">텔레그램으로 신청하기</a>
+    <p class="after" id="after">버튼을 누르면 텔레그램이 열립니다. 하단의 <b>시작</b>을 누르면 신청이 완료됩니다.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">3</span>신청 후에는</h2>
+    <ol class="steps">
+      <li><span><b>등록 확인 메시지</b>가 텔레그램으로 옵니다. 최대 30분 걸릴 수 있어요.</span></li>
+      <li><span>조건에 맞는 <b>새 공고</b>가 뜨면 평일 오전 10시·오후 4시에 알려드립니다.</span></li>
+      <li><span>청약 접수가 끝나면 <b>다음날 아침 8시 30분</b>에 경쟁률 엑셀을 보내드립니다.</span></li>
+    </ol>
+  </section>
+
+  <details id="adminBox" hidden>
+    <summary>관리자 설정 — 처음 한 번만</summary>
+    <div class="admin">
+      <label for="botId">텔레그램 봇 아이디 (BotFather가 만들어준 이름, @ 없이)</label>
+      <input type="text" id="botId" placeholder="예: my_cheongyak_bot" autocomplete="off" spellcheck="false">
+      <button class="mini" id="makeLink" type="button">공유용 링크 만들기</button>
+      <p class="share" id="share"></p>
+    </div>
+  </details>
+
+</div>
+
+<script>
+(function(){
+  // ─────────────────────────────────────────────
+  //  ★ 여기 한 곳만 바꾸세요. BotFather가 준 봇 아이디 (@ 없이)
+  var BOT_ID = "cheongyak_alarm_bot";
+  // ─────────────────────────────────────────────
+
+  var REGIONS = [
+    ["all","전국"],["se","서울"],["ic","인천"],["ggn","경기북부"],["ggs","경기남부"],
+    ["bs","부산"],["dg","대구"],["gj","광주"],["dj","대전"],["us","울산"],["sj","세종"],
+    ["gw","강원"],["cb","충북"],["cn","충남"],["jb","전북"],["jn","전남"],
+    ["gb","경북"],["gm","경남"],["jj","제주"]
+  ];
+  var SIZES = [[0,"제한 없음"],[300,"300세대 이상"],[500,"500세대 이상"],[1000,"1,000세대 이상"]];
+
+  var picked = [], size = 300, bot = "";
+  bot = BOT_ID;
+  try { bot = new URLSearchParams(location.search).get("bot") || BOT_ID || localStorage.getItem("cy_bot") || ""; } catch(e){ bot = BOT_ID; }
+
+  var regionsEl = document.getElementById("regions");
+  var sizesEl = document.getElementById("sizes");
+  var summaryEl = document.getElementById("summary");
+  var goEl = document.getElementById("go");
+  var afterEl = document.getElementById("after");
+
+  REGIONS.forEach(function(r){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = r[1];
+    b.setAttribute("aria-pressed","false"); b.dataset.code = r[0];
+    b.addEventListener("click", function(){
+      var code = r[0];
+      if (code === "all") { picked = picked.indexOf("all") >= 0 ? [] : ["all"]; }
+      else {
+        picked = picked.filter(function(c){ return c !== "all"; });
+        var i = picked.indexOf(code);
+        if (i >= 0) picked.splice(i,1); else picked.push(code);
+      }
+      render();
+    });
+    regionsEl.appendChild(b);
+  });
+
+  SIZES.forEach(function(s){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "chip wide"; b.textContent = s[1];
+    b.setAttribute("aria-pressed", s[0] === size ? "true" : "false");
+    b.dataset.size = s[0];
+    b.addEventListener("click", function(){ size = s[0]; render(); });
+    sizesEl.appendChild(b);
+  });
+
+  function labels(){
+    return picked.map(function(c){
+      for (var i=0;i<REGIONS.length;i++) if (REGIONS[i][0]===c) return REGIONS[i][1];
+      return c;
+    });
+  }
+
+  function render(){
+    Array.prototype.forEach.call(regionsEl.children, function(b){
+      b.setAttribute("aria-pressed", picked.indexOf(b.dataset.code) >= 0 ? "true" : "false");
+    });
+    Array.prototype.forEach.call(sizesEl.children, function(b){
+      b.setAttribute("aria-pressed", Number(b.dataset.size) === size ? "true" : "false");
+    });
+
+    var sizeText = size ? size.toLocaleString() + "세대 이상" : "규모 상관없이";
+    if (!picked.length){
+      summaryEl.textContent = "지역을 하나 이상 골라주세요.";
+      goEl.setAttribute("aria-disabled","true");
+      goEl.removeAttribute("href");
+      return;
+    }
+    summaryEl.innerHTML = "<b>" + labels().join(", ") + "</b>에서 <b>" + sizeText +
+      "</b> 공고가 뜨면 알려드립니다.";
+
+    if (!bot){
+      goEl.setAttribute("aria-disabled","true");
+      goEl.removeAttribute("href");
+      afterEl.textContent = "아래 '관리자 설정'에서 봇 아이디를 먼저 넣어주세요.";
+      return;
+    }
+    var payload = "v1_" + size + "_" + picked.join("-");
+    goEl.href = "https://t.me/" + bot + "?start=" + payload;
+    goEl.setAttribute("aria-disabled","false");
+    afterEl.innerHTML = "버튼을 누르면 텔레그램이 열립니다. 하단의 <b>시작</b>을 누르면 신청이 완료됩니다.";
+  }
+
+  var botInput = document.getElementById("botId");
+  var shareEl = document.getElementById("share");
+  if (!BOT_ID) { document.getElementById("adminBox").hidden = false; }
+  botInput.value = bot;
+  if (bot) { try { document.getElementById("adminBox").open = false; } catch(e){} }
+
+  document.getElementById("makeLink").addEventListener("click", function(){
+    bot = botInput.value.trim().replace(/^@/, "");
+    try { localStorage.setItem("cy_bot", bot); } catch(e){}
+    if (!bot){ shareEl.style.display = "none"; render(); return; }
+    var url = location.origin + location.pathname + "?bot=" + encodeURIComponent(bot);
+    shareEl.style.display = "block";
+    shareEl.innerHTML = "이 주소를 공유하세요<br><b>" + url + "</b>";
+    render();
+  });
+
+  render();
+})();
+</script>
+
+</html>
