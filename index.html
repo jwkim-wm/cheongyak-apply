@@ -78,6 +78,23 @@
   .go[aria-disabled="true"]{opacity:.45; pointer-events:none;}
   .go:focus-visible{outline:2px solid var(--accent); outline-offset:3px;}
   .after{font-size:.86rem; color:var(--muted); margin-top:10px; text-align:center;}
+  .fallback{
+    margin-top:14px; border:1px dashed var(--line); border-radius:12px; padding:14px 16px;
+    background:var(--surface); display:none;
+  }
+  .fallback.on{display:block;}
+  .fallback p{font-size:.86rem; color:var(--muted); margin:0 0 10px;}
+  .fallback p b{color:var(--ink);}
+  .cmdrow{display:flex; gap:8px; align-items:stretch;}
+  .cmd{
+    flex:1; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9rem;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:9px;
+    padding:10px 12px; color:var(--ink); word-break:break-all; display:flex; align-items:center;
+  }
+  .copy{
+    font:inherit; font-size:.84rem; font-weight:600; padding:0 16px; border-radius:9px; border:0;
+    cursor:pointer; background:var(--accent); color:var(--accent-ink); white-space:nowrap;
+  }
 
   .steps{list-style:none; counter-reset:s; margin:0; padding:0; display:grid; gap:8px;}
   .steps li{counter-increment:s; display:grid; grid-template-columns:20px 1fr; gap:10px; font-size:.9rem; color:var(--muted);}
@@ -122,6 +139,14 @@
     <p class="summary" id="summary">지역을 하나 이상 골라주세요.</p>
     <a class="go" id="go" href="#" aria-disabled="true" rel="noopener">텔레그램으로 신청하기</a>
     <p class="after" id="after">버튼을 누르면 텔레그램이 열립니다. 하단의 <b>시작</b>을 누르면 신청이 완료됩니다.</p>
+    <div class="fallback" id="fallback">
+      <p>텔레그램이 열렸는데 아래쪽에 <b>시작</b> 버튼이 안 보이나요? 예전에 이 봇과 대화한 적이 있으면 버튼이 나오지 않습니다.
+         그럴 때는 아래 명령어를 복사해서 <b>대화창에 붙여넣고 전송</b>하세요. 똑같이 신청됩니다.</p>
+      <div class="cmdrow">
+        <code class="cmd" id="cmd">/start</code>
+        <button class="copy" id="copy" type="button">복사</button>
+      </div>
+    </div>
   </section>
 
   <section class="card">
@@ -169,6 +194,8 @@
   var summaryEl = document.getElementById("summary");
   var goEl = document.getElementById("go");
   var afterEl = document.getElementById("after");
+  var fallbackEl = document.getElementById("fallback");
+  var cmdEl = document.getElementById("cmd");
 
   REGIONS.forEach(function(r){
     var b = document.createElement("button");
@@ -216,6 +243,7 @@
       summaryEl.textContent = "지역을 하나 이상 골라주세요.";
       goEl.setAttribute("aria-disabled","true");
       goEl.removeAttribute("href");
+      fallbackEl.classList.remove("on");
       return;
     }
     summaryEl.innerHTML = "<b>" + labels().join(", ") + "</b>에서 <b>" + sizeText +
@@ -225,12 +253,15 @@
       goEl.setAttribute("aria-disabled","true");
       goEl.removeAttribute("href");
       afterEl.textContent = "아래 '관리자 설정'에서 봇 아이디를 먼저 넣어주세요.";
+      fallbackEl.classList.remove("on");
       return;
     }
     var payload = "v1_" + size + "_" + picked.join("-");
     goEl.href = "https://t.me/" + bot + "?start=" + payload;
     goEl.setAttribute("aria-disabled","false");
     afterEl.innerHTML = "버튼을 누르면 텔레그램이 열립니다. 하단의 <b>시작</b>을 누르면 신청이 완료됩니다.";
+    cmdEl.textContent = "/start " + payload;
+    fallbackEl.classList.add("on");
   }
 
   var botInput = document.getElementById("botId");
@@ -247,6 +278,28 @@
     shareEl.style.display = "block";
     shareEl.innerHTML = "이 주소를 공유하세요<br><b>" + url + "</b>";
     render();
+  });
+
+  document.getElementById("copy").addEventListener("click", function(){
+    var btn = this, text = cmdEl.textContent;
+    function done(){ btn.textContent = "복사됨"; setTimeout(function(){ btn.textContent = "복사"; }, 1600); }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, fb);
+      } else { fb(); }
+    } catch(e){ fb(); }
+    function fb(){
+      try {
+        var t = document.createElement("textarea");
+        t.value = text; t.setAttribute("readonly",""); t.style.position="fixed"; t.style.opacity="0";
+        document.body.appendChild(t); t.select(); t.setSelectionRange(0, text.length);
+        document.execCommand("copy"); document.body.removeChild(t); done();
+      } catch(e2){
+        var r = document.createRange(); r.selectNodeContents(cmdEl);
+        var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        btn.textContent = "직접 복사";
+      }
+    }
   });
 
   render();
