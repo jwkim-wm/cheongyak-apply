@@ -58,10 +58,16 @@
     font:inherit; font-size:.88rem; font-weight:500; cursor:pointer; user-select:none;
     padding:8px 14px; border-radius:999px; border:1px solid var(--line);
     background:var(--surface-2); color:var(--ink); transition:background .12s, border-color .12s;
+    white-space:nowrap;
   }
   .chip[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
   .chip:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-  .chip.wide{flex:1; min-width:96px; text-align:center;}
+  /* 규모 선택지 — 글자가 칸 안에서 줄바꿈되지 않게 한다.
+     좁은 화면은 2x2, 넓은 화면은 한 줄 4개. 그 사이 값으로는 두지 않아
+     '3개 + 1개'처럼 어정쩡하게 남는 모양이 생기지 않는다. */
+  #sizes{display:grid; grid-template-columns:repeat(2, 1fr); gap:7px;}
+  @media (min-width:620px){ #sizes{grid-template-columns:repeat(4, 1fr);} }
+  .chip.wide{width:100%; min-width:0; padding-inline:10px; text-align:center;}
 
   .summary{
     background:var(--accent-soft); border-radius:12px; padding:16px 18px;
